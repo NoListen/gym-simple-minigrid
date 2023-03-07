@@ -22,7 +22,11 @@ class SimpleEmptyEnv(SimpleMiniGridEnv):
         self.goals = list()
         self.add_goal(self.goal_pos)
 
-        return self.state, self.goal_pos
+        obs = {"observation": self.state,
+               "achieved_goal": self.agent_pos,
+               "desired_goal": self.goal_pos}
+
+        return obs
 
 
 class SimpleEmptyEnv5x5(SimpleEmptyEnv):

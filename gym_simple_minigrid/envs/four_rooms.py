@@ -8,7 +8,7 @@ class SimpleFourRoomsEnv(SimpleMiniGridEnv):
         assert grid_size >= 5
         super().__init__(grid_size=grid_size)
 
-        self.max_steps = 8 * grid_size
+        self.max_steps = self._max_episode_steps = 8 * grid_size
 
     def reset(self):
         # Step count since episode start
@@ -27,7 +27,11 @@ class SimpleFourRoomsEnv(SimpleMiniGridEnv):
         self.goals = list()
         self.add_goal(self.goal_pos)
 
-        return self.state, self.goal_pos
+        obs = {"observation": self.state,
+               "achieved_goal": self.agent_pos,
+               "desired_goal": self.goal_pos}
+
+        return obs
 
     def create_room_walls(self):
         x = self.grid.width // 2

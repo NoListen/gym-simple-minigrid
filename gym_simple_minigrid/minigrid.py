@@ -272,7 +272,7 @@ class SimpleMiniGridEnv(gym.Env):
         # Environment configuration
         self.width = width
         self.height = height
-        self.max_steps = max_steps
+        self.max_steps = self._max_episode_steps = max_steps
 
         # Initialize the RNG
         self.np_random = None
@@ -366,11 +366,20 @@ class SimpleMiniGridEnv(gym.Env):
             info['TimeLimit.truncated'] = True  # TODO automate
 
         if np.array_equal(self.agent_pos, self.goal_pos):
-            done = True
+            # we do not allow early termination now.
+            # done = True
             reward = 0
+            info['is_success'] = True
+        else:
+            info['is_success'] = False
 
-        return self.state, reward, done, info
+        
+        obs = {"observation": self.state,
+               "achieved_goal": self.agent_pos,
+               "desired_goal": self.goal_pos}
 
+        return obs, reward, done, info
+    
     def render(self, mode='human', close=False, tile_size=32):
         """
         Render the whole-grid human view
