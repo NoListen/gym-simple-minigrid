@@ -280,6 +280,7 @@ class SimpleMiniGridEnv(gym.Env):
 
         # Initialize the environment
         self.agent_pos = self.agent_dir = self.goal_pos = self.step_count = self.grid = self.goals = None
+        self.dir_lu_table = np.eye(4)
         self.reset()
 
     def reset(self):
@@ -308,7 +309,8 @@ class SimpleMiniGridEnv(gym.Env):
 
     @property
     def state(self):
-        return np.append(self.agent_pos, self.agent_dir)
+        one_hot_agent_dir = self.dir_lu_table[self.agent_dir]
+        return np.append(self.agent_pos, one_hot_agent_dir)
 
     @property
     def goal_level(self):
