@@ -350,6 +350,10 @@ class SimpleMiniGridEnv(gym.Env):
         done = False
         info = {}
 
+        if isinstance(action, np.ndarray):
+            assert len(action) == 1, "we got incorrect action shape"
+            action = action[0]
+
         # Move forward
         fwd = self.agent_pos + ACTION_DIRS[action]
         if not isinstance(self.grid.get(*self.to_grid_coords(fwd)), Wall):
