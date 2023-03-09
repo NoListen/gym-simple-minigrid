@@ -46,9 +46,13 @@ DIRS = [
     # Up (negative Y)
     (0, -1),
 ]
-DIR_TO_VEC = {i: np.array(d) for i, d in enumerate(DIRS)}
-# VEC_TO_DIR = {d: i for i, d in enumerate(DIRS)}
-
+ACTION_DIRS = {
+    0: np.array([0, 0]),
+    1: np.array([-1, 0]),
+    2: np.array([1, 0]),
+    3: np.array([0, -1]),
+    4: np.array([0, 1])
+}
 
 class WorldObj:
     """
@@ -232,9 +236,12 @@ class SimpleMiniGridEnv(gym.Env):
     # Enumeration of possible actions
     class Actions(IntEnum):
         # Turn left, turn right, move forward
-        left = 0
-        right = 1
-        forward = 2
+        null = 0
+        left = 1
+        right = 2
+        up = 3
+        down = 4
+        
 
     def __init__(self, grid_size=None, width=None, height=None, max_steps=None, seed=9):
         # Env name
@@ -248,7 +255,7 @@ class SimpleMiniGridEnv(gym.Env):
 
         # Default max_steps
         if max_steps is None:
-            max_steps = 4 * (width + height)
+            max_steps = 3 * (width + height)
 
         # Action enumeration for this environment
         self.actions = SimpleMiniGridEnv.Actions
@@ -256,10 +263,10 @@ class SimpleMiniGridEnv(gym.Env):
         # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
 
-        # Observations are encoded as (x-coor, y-coor, orientation)
+        # Observations are encoded as (x-coor, y-coor)
         self.observation_space = spaces.Box(
-            low=np.array((0, 0, 0)),
-            high=np.array((width - 1, height - 1, 3)),
+            low=np.array((0, 0)),
+            high=np.array((width - 1, height - 1)),
             dtype=np.int
         )
 
@@ -279,8 +286,8 @@ class SimpleMiniGridEnv(gym.Env):
         self.seed(seed=seed)
 
         # Initialize the environment
-        self.agent_pos = self.agent_dir = self.goal_pos = self.step_count = self.grid = self.goals = None
-        self.dir_lu_table = np.eye(4)
+        self.agent_pos = self.goal_pos = self.step_count = self.grid = self.goals = None
+        self.agent_dir = None # render functions haven't been changed yet.
         self.reset()
 
     def reset(self):
@@ -309,8 +316,7 @@ class SimpleMiniGridEnv(gym.Env):
 
     @property
     def state(self):
-        one_hot_agent_dir = self.dir_lu_table[self.agent_dir]
-        return np.append(self.agent_pos, one_hot_agent_dir)
+        return self.agent_pos
 
     @property
     def goal_level(self):
@@ -323,7 +329,6 @@ class SimpleMiniGridEnv(gym.Env):
             agent_y = self.np_random.randint(self.height)
             if self.grid.get(*self.to_grid_coords(np.array((agent_x, agent_y)))) is None:
                 break
-        agent_dir = self.np_random.randint(4)
 
         # Pick a different random position for the goal
         while True:
@@ -334,7 +339,6 @@ class SimpleMiniGridEnv(gym.Env):
                 break
 
         self.agent_pos = np.array((agent_x, agent_y))
-        self.agent_dir = agent_dir
         self.goal_pos = np.array((goal_x, goal_y))
 
         return
@@ -346,22 +350,10 @@ class SimpleMiniGridEnv(gym.Env):
         done = False
         info = {}
 
-        # Rotate left
-        if action == self.actions.left:
-            self.agent_dir = (self.agent_dir - 1) % 4
-
-        # Rotate right
-        elif action == self.actions.right:
-            self.agent_dir = (self.agent_dir + 1) % 4
-
         # Move forward
-        elif action == self.actions.forward:
-            fwd = self.agent_pos + DIR_TO_VEC[self.agent_dir]
-            if not isinstance(self.grid.get(*self.to_grid_coords(fwd)), Wall):
-                self.agent_pos = fwd
-
-        else:
-            raise ValueError('Action out of bounds')
+        fwd = self.agent_pos + ACTION_DIRS[action]
+        if not isinstance(self.grid.get(*self.to_grid_coords(fwd)), Wall):
+            self.agent_pos = fwd
 
         if self.step_count >= self.max_steps:
             done = True
@@ -375,7 +367,7 @@ class SimpleMiniGridEnv(gym.Env):
         else:
             info['is_success'] = False
 
-        
+        # NOTE Strictly, I should modify the observation space to be a table.       
         obs = {"observation": self.state,
                "achieved_goal": self.agent_pos,
                "desired_goal": self.goal_pos}
