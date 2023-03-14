@@ -8,7 +8,7 @@ class SimpleFourRoomsEnv(SimpleMiniGridEnv):
         assert grid_size >= 5
         super().__init__(grid_size=grid_size)
 
-        self.max_steps = self._max_episode_steps = 8 * grid_size
+        self.max_steps = self._max_episode_steps = 6 * grid_size
 
     def reset(self):
         # Step count since episode start
