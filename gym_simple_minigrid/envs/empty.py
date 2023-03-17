@@ -54,6 +54,10 @@ class SimpleEmptyEnv25x25(SimpleEmptyEnv):
         super().__init__(grid_size=25)
 
 
+class SimpleEmptyEnv50x50(SimpleEmptyEnv):
+    def __init__(self):
+        super().__init__(grid_size=50)
+
 register(
     _id='Simple-MiniGrid-Empty-5x5-v0',
     entry_point='gym_simple_minigrid.envs:SimpleEmptyEnv5x5'
@@ -77,4 +81,9 @@ register(
 register(
     _id='Simple-MiniGrid-Empty-25x25-v0',
     entry_point='gym_simple_minigrid.envs:SimpleEmptyEnv25x25'
+)
+
+register(
+    _id='Simple-MiniGrid-Empty-50x50-v0',
+    entry_point='gym_simple_minigrid.envs:SimpleEmptyEnv50x50'
 )
