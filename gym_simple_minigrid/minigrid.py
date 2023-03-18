@@ -255,7 +255,7 @@ class SimpleMiniGridEnv(gym.Env):
 
         # Default max_steps
         if max_steps is None:
-            max_steps = 3 * (width + height)
+            max_steps = 3 * max(width, height)
 
         # Action enumeration for this environment
         self.actions = SimpleMiniGridEnv.Actions
